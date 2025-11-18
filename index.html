@@ -1,0 +1,1547 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HW GradeMetrix</title>
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json?v=1.0.2">
+
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#003366">
+
+    <!-- iOS Support -->
+    <link rel="apple-touch-icon" href="icons/ios/180.png" sizes="180x180">
+    <link rel="apple-touch-icon" href="icons/ios/167.png" sizes="167x167">
+    <link rel="apple-touch-icon" href="icons/ios/152.png" sizes="152x152">
+    <link rel="apple-touch-icon" href="icons/ios/120.png" sizes="120x120">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="mobile-web-app-capable" content="yes">
+
+    <!-- Android/Universal -->
+    <link rel="icon" href="icons/android/icon-192x192.png" sizes="192x192">
+    <link rel="icon" href="icons/android/icon-512x512.png" sizes="512x512">
+
+    <!-- Windows -->
+    <meta name="msapplication-TileImage" content="icons/windows11/Square150x150Logo.png">
+    <meta name="msapplication-TileColor" content="#003366">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <!-- Viewport for mobile devices -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --primary: #003366;
+            --primary-light: #004d99;
+            --secondary: #e6f2ff;
+            --accent: #ff6b00;
+            --accent-light: #ff8c33;
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --gray: #6c757d;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: var(--dark);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        header {
+            grid-column: 1 / -1;
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: var(--primary);
+            color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 2.2rem;
+        }
+
+        h2 {
+            margin-top: 0;
+            color: var(--primary);
+            font-size: 1.4rem;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--secondary);
+        }
+
+        h3 {
+            color: var(--primary-light);
+            margin-top: 0;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(0, 51, 102, 0.2);
+        }
+
+        .horizontal-group {
+            display: flex;
+            gap: 15px;
+        }
+
+        .horizontal-item {
+            flex: 1;
+        }
+
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        button:hover {
+            background-color: var(--primary-light);
+            transform: translateY(-2px);
+        }
+
+        button.accent {
+            background-color: var(--accent);
+        }
+
+        button.accent:hover {
+            background-color: var(--accent-light);
+        }
+
+        button.success {
+            background-color: var(--success);
+        }
+
+        button.danger {
+            background-color: var(--danger);
+        }
+
+        .result-box {
+            background-color: var(--secondary);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            text-align: center;
+            border-left: 4px solid var(--primary);
+        }
+
+        .result-value {
+            font-size: 2.2rem;
+            font-weight: bold;
+            margin: 10px 0;
+            color: var(--primary);
+        }
+
+        .assessment-block {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            background-color: var(--light);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .assessment-block:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .small-text {
+            font-size: 0.85em;
+            color: var(--gray);
+            margin-top: 5px;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            border-bottom: 3px solid var(--primary);
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .course-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .course-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .course-item:hover {
+            background-color: var(--secondary);
+        }
+
+        .grade-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .grade-A {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .grade-B {
+            background-color: #17a2b8;
+            color: white;
+        }
+
+        .grade-C {
+            background-color: #ffc107;
+            color: black;
+        }
+
+        .grade-D {
+            background-color: #fd7e14;
+            color: white;
+        }
+
+        .grade-E {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .grade-F {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .stat-box {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            border-top: 4px solid var(--primary);
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin: 10px 0;
+        }
+
+        .semester-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .export-btn {
+            background-color: var(--success);
+        }
+
+        .import-btn {
+            background-color: var(--warning);
+            color: black;
+        }
+
+        .delete-btn {
+            background-color: var(--danger);
+            padding: 5px 10px;
+            font-size: 0.8rem;
+        }
+
+        .course-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 20px;
+            color: var(--gray);
+            font-style: italic;
+        }
+
+        .requirements-box {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .requirements-box h4 {
+            margin-top: 0;
+            color: #856404;
+        }
+
+        .progress-info {
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: var(--gray);
+        }
+
+        .target-guaranteed {
+            color: #155724;
+            background: #d4edda;
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 4px solid #28a745;
+        }
+
+        .target-achievable {
+            color: #856404;
+            background: #fff3cd;
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 4px solid #ffc107;
+        }
+
+        .target-impossible,
+        .target-failed {
+            color: #721c24;
+            background: #f8d7da;
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 4px solid #dc3545;
+        }
+
+        .weight-info {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            background: var(--secondary);
+        }
+
+        .weight-summary {
+            font-size: 0.9em;
+        }
+
+        .progress-warning {
+            color: #856404;
+            background: #fff3cd;
+            padding: 5px;
+            border-radius: 3px;
+            margin-top: 5px;
+        }
+
+        .progress-good {
+            color: #155724;
+            background: #d4edda;
+            padding: 5px;
+            border-radius: 3px;
+            margin-top: 5px;
+        }
+
+        .progress-danger {
+            color: #721c24;
+            background: #f8d7da;
+            padding: 5px;
+            border-radius: 3px;
+            margin-top: 5px;
+        }
+        
+        /* Feedback Styles */
+.feedback-fab {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    background: var(--accent);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    z-index: 1000;
+    transition: transform 0.3s, background-color 0.3s;
+}
+
+.feedback-fab:hover {
+    transform: scale(1.1);
+    background: var(--accent-light);
+}
+
+.feedback-panel {
+    position: fixed;
+    top: 0;
+    right: -400px;
+    width: 400px;
+    height: 100vh;
+    background: rgb(251, 250, 250);
+    box-shadow: -4px 0 12px rgba(0,0,0,0.15);
+    z-index: 1001;
+    transition: right 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.feedback-panel.active {
+    right: 0;
+}
+
+.feedback-header {
+    padding: 20px;
+    background: var(--primary);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.feedback-header h3 {
+    margin: 0;
+    color: white;
+}
+
+.feedback-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+}
+
+.feedback-body {
+    padding: 20px;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.feedback-body textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    resize: vertical;
+    min-height: 80px;
+}
+
+.radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.radio-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: normal;
+    cursor: pointer;
+}
+
+.feedback-submit {
+    width: 100%;
+    background: var(--primary);
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    margin-top: 15px;
+}
+
+.feedback-submit:hover {
+    background: var(--primary-light);
+}
+
+/* Overlay */
+.feedback-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    display: none;
+}
+
+.feedback-overlay.active {
+    display: block;
+}
+
+@media (max-width: 480px) {
+    .feedback-panel {
+        width: 100%;
+        right: -100%;
+    }
+}
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>HW GradeMetrix</h1>
+            <p>Calculate your weighted grades and track your academic progress</p>
+        </header>
+
+        <div class="card">
+            <h2>COURSE/MODULE DETAILS</h2>
+            <div class="form-group">
+                <label for="courseName">Course Name</label>
+                <input type="text" id="courseName" placeholder="Enter course name">
+            </div>
+            <div class="horizontal-group">
+                <div class="horizontal-item">
+                    <label for="credits">Credits</label>
+                    <input type="number" id="credits" placeholder="Enter credits">
+                </div>
+                <div class="horizontal-item">
+                    <label for="semester">Semester</label>
+                    <select id="semester">
+                        <option value="1">Semester 1</option>
+                        <option value="2">Semester 2</option>
+                        <option value="3">Semester 3</option>
+                    </select>
+                </div>
+                <div class="horizontal-item">
+                    <label for="academicYear">Academic Year</label>
+                    <select id="academicYear">
+                        <!-- Adding academic year -->
+
+                        <!-- Section for links to course pages will be added at the end of development -->
+
+                    </select>
+                </div>
+            </div>
+            <div class="form-group" style="margin-top: 15px;">
+                <label for="studyYearSelect">Current Year of Study</label>
+                <select id="studyYearSelect">
+                    <option value="1">First Year</option>
+                    <option value="2">Second Year</option>
+                    <option value="3">Third Year</option>
+                    <option value="4">Fourth Year</option>
+                </select>
+                <div class="small-text">Select your current year to see progression requirements.</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>ASSESSMENT COMPONENTS</h2>
+            <div id="assessmentsContainer">
+                <!-- Assessment blocks will be added here dynamically -->
+            </div>
+            <button id="addAssessment" class="accent">+ Add New Assessment</button>
+            <div id="weightInfo" class="weight-info"></div>
+        </div>
+
+        <div class="card">
+            <h2>COURSE RESULTS</h2>
+            <div class="result-box">
+                <label>Final Percentage Grade</label>
+                <div class="result-value" id="finalPercentage">0%</div>
+            </div>
+            <div class="result-box">
+                <label>Final Letter Grade</label>
+                <div class="result-value" id="finalLetter">-</div>
+            </div>
+
+            <div class="target-box" id="targetBox">
+                <!-- Информация о том, сколько нужно для цели ////////////////////////////////////////////////////////////////////////////////////-->
+            </div>
+            <div class="action-buttons">
+                <button id="saveResults" class="success">Save Results</button>
+                <button id="exportCourse" class="export-btn">Export Course Data</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>OVERALL YEAR RESULTS</h2>
+            <div class="result-box">
+                <label>Overall Weighted Average Mark (WAM)</label>
+                <div class="result-value" id="overallWAM">0</div>
+                <div class="small-text">Data is taken from saved results of all courses</div>
+            </div>
+            <div class="result-box">
+                <label>Projected Degree Classification</label>
+                <div class="result-value" id="degreeClassification">-</div>
+                <div class="small-text">Note: This is a forecast. The final classification may depend on the specific
+                    rules of the university..</div>
+            </div>
+            <div class="requirements-box">
+                <h4>Year Progression Requirements</h4>
+                <div id="yearRequirements">
+                    <!-- Requirements will be displayed here -->
+                </div>
+                <div class="progress-info" id="progressInfo">
+                    <!-- Progress info will be displayed here -->
+                </div>
+            </div>
+            <div class="action-buttons">
+                <button id="importData" class="import-btn">Import Excel Data</button>
+                <button id="exportData" class="export-btn">Export All Data</button>
+            </div>
+        </div>
+
+        <div class="card" style="grid-column: 1 / -1;">
+            <h2>COURSE HISTORY & STATISTICS</h2>
+
+            <div class="tabs">
+                <div class="tab active" data-tab="semester1">Semester 1</div>
+                <div class="tab" data-tab="semester2">Semester 2</div>
+                <div class="tab" data-tab="year">Academic Year</div>
+            </div>
+
+            <div class="tab-content active" id="semester1-content">
+                <div class="semester-selector">
+                    <select id="semester1Year">
+                        <!-- Years will be added automatically via JavaScript. -->
+                    </select>
+                </div>
+                <div class="course-list" id="semester1Courses">
+                    <!-- Semester 1 courses will be displayed here -->
+                </div>
+            </div>
+
+            <div class="tab-content" id="semester2-content">
+                <div class="semester-selector">
+                    <select id="semester2Year">
+                        <!-- Years will be added automatically via JavaScript. -->
+                    </select>
+                </div>
+                <div class="course-list" id="semester2Courses">
+                    <!-- Semester 2 courses will be displayed here -->
+                </div>
+            </div>
+
+            <div class="tab-content" id="year-content">
+                <div class="semester-selector">
+                    <select id="academicYearSelect">
+                        <!-- Years will be added automatically via JavaScript -->
+                    </select>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <label>Total Credits</label>
+                        <div class="stat-value" id="totalCredits">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <label>Average Grade</label>
+                        <div class="stat-value" id="averageGrade">0%</div>
+                    </div>
+                    <div class="stat-box">
+                        <label>Courses Completed</label>
+                        <div class="stat-value" id="coursesCompleted">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <label>Best Course</label>
+                        <div class="stat-value" id="bestCourse">-</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+     <!-- Feedback Floating Button -->
+<div class="feedback-fab" id="feedbackFab" aria-label="Provide feedback" role="button" tabindex="0">💬</div>
+
+<!-- Feedback Side Panel -->
+<div class="feedback-panel" id="feedbackPanel" role="dialog" aria-labelledby="feedbackTitle" aria-hidden="true">
+    <div class="feedback-header">
+        <h3>Send Feedback</h3>
+        <button class="feedback-close" id="feedbackClose" aria-label="Close feedback panel">&times;</button>
+    </div>
+    <div class="feedback-body">
+        <div class="form-group">
+            <label>How easy is the app to use?</label>
+            <div class="radio-group">
+                <label><input type="radio" name="ease" value="very_easy"> Very Easy</label>
+                <label><input type="radio" name="ease" value="easy"> Easy</label>
+                <label><input type="radio" name="ease" value="neutral"> Normal</label>
+                <label><input type="radio" name="ease" value="difficult"> Difficult</label>
+                <label><input type="radio" name="ease" value="very_difficult"> Very Difficult</label>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label>What do you like most?</label>
+            <textarea id="feedbackLikes" placeholder="Tell us what you enjoy about the app..."></textarea>
+        </div>
+        
+        <div class="form-group">
+            <label>Suggestions or issues</label>
+            <textarea id="feedbackIssues" placeholder="Describe any problems or ideas for improvement..." required></textarea>
+        </div>
+        
+        <button class="feedback-submit" id="feedbackSubmit">Send Feedback</button>
+    </div>
+ </div> 
+    <!-- Add this before the closing body tag -->
+<div class="feedback-overlay" id="feedbackOverlay"></div>
+
+    <script>
+        // Database simulation using localStorage
+        const DB_NAME = 'gradeCalculatorDB';
+
+        // Generate academic years from 2020-2021 to 2030-2031
+        function generateAcademicYears() {
+            const currentYear = new Date().getFullYear();
+            const years = [];
+
+            // Generate years from 2023-2024 to 2050-2051
+            for (let year = 2023; year <= 2050; year++) {
+                years.push(`${year}-${year + 1}`);
+            }
+
+            return years;
+        }
+
+        // Function to populate year dropdowns
+        function populateYearSelects() {
+            const years = generateAcademicYears();
+            const yearSelects = [
+                'academicYear',
+                'semester1Year',
+                'semester2Year',
+                'academicYearSelect'
+            ];
+
+            yearSelects.forEach(selectId => {
+                const select = document.getElementById(selectId);
+                // Save current value if any
+                const currentValue = select.value;
+                select.innerHTML = ''; // Clear existing options
+
+                years.forEach(year => {
+                    const option = document.createElement('option');
+                    option.value = year;
+                    option.textContent = year;
+                    select.appendChild(option);
+                });
+
+                // Restore value or set current year
+                if (years.includes(currentValue)) {
+                    select.value = currentValue;
+                } else {
+                    const currentYear = new Date().getFullYear();
+                    const currentAcademicYear = `${currentYear}-${currentYear + 1}`;
+                    select.value = years.includes(currentAcademicYear) ? currentAcademicYear : years[0];
+                }
+            });
+        }
+
+        // Initialize database if not exists
+        function initDatabase() {
+            if (!localStorage.getItem(DB_NAME)) {
+                const initialData = {
+                    courses: [],
+                    settings: {
+                        currentYear: new Date().getFullYear()
+                    }
+                };
+                localStorage.setItem(DB_NAME, JSON.stringify(initialData));
+            }
+            return JSON.parse(localStorage.getItem(DB_NAME));
+        }
+
+        // Save course to database
+        function saveCourseToDB(courseData) {
+            const db = initDatabase();
+            courseData.id = Date.now().toString(); // Unique ID
+            db.courses.push(courseData);
+            localStorage.setItem(DB_NAME, JSON.stringify(db));
+            updateAllDisplays();
+            return courseData.id;
+        }
+
+        // Delete course from database
+        function deleteCourseFromDB(courseId) {
+            const db = initDatabase();
+            db.courses = db.courses.filter(course => course.id !== courseId);
+            localStorage.setItem(DB_NAME, JSON.stringify(db));
+            updateAllDisplays();
+        }
+
+        // Get courses from database
+        function getCoursesFromDB() {
+            const db = initDatabase();
+            return db.courses;
+        }
+
+        // Get courses by semester and year
+        function getCoursesBySemester(semester, year) {
+            const courses = getCoursesFromDB();
+            return courses.filter(course =>
+                course.semester === semester && course.academicYear === year
+            );
+        }
+
+        // Get courses by academic year
+        function getCoursesByAcademicYear(year) {
+            const courses = getCoursesFromDB();
+            return courses.filter(course => course.academicYear === year);
+        }
+
+        // Calculate WAM for a set of courses
+        function calculateWAM(courses) {
+            if (courses.length === 0) return 0;
+
+            let totalWeightedScore = 0;
+            let totalCredits = 0;
+
+            courses.forEach(course => {
+                totalWeightedScore += course.finalPercentage * course.credits;
+                totalCredits += course.credits;
+            });
+
+            return totalCredits > 0 ? (totalWeightedScore / totalCredits).toFixed(1) : 0;
+        }
+
+        // Calculate degree classification based on WAM
+        function calculateDegreeClassification(wam) {
+            if (wam >= 70) return "First Class Honours";
+            if (wam >= 60) return "Upper Second Class Honours";
+            if (wam >= 50) return "Lower Second Class Honours";
+            if (wam >= 40) return "Third Class Honours";
+            return "Fail";
+        }
+
+        // Calculate letter grade 
+        function calculateLetterGrade(percentage) {
+            if (percentage >= 70) return 'A';
+            if (percentage >= 60) return 'B';
+            if (percentage >= 50) return 'C';
+            if (percentage >= 40) return 'D';
+            if (percentage >= 30) return 'E';
+            return 'F';
+        }
+
+        // Get grade description
+        function getGradeDescription(letterGrade) {
+            const descriptions = {
+                'A': 'Excellent (70% or more)',
+                'B': 'Very Good (60% to 69%)',
+                'C': 'Good (50% to 59%)',
+                'D': 'Satisfactory (40% to 49%)',
+                'E': 'Adequate - Fail (30% to 39%)',
+                'F': 'Inadequate (Below 30%)'
+            };
+            return descriptions[letterGrade] || 'Unknown';
+        }
+
+        // Update year requirements display
+        function updateYearRequirements(yearCourses, year) {
+            const requirementsContainer = document.getElementById('yearRequirements');
+            const progressInfo = document.getElementById('progressInfo');
+
+            if (yearCourses.length === 0) {
+                requirementsContainer.innerHTML = '<p>No courses saved for this year.</p>';
+                progressInfo.innerHTML = '';
+                return;
+            }
+
+            const totalCredits = yearCourses.reduce((sum, course) => sum + course.credits, 0);
+            const wam = calculateWAM(yearCourses);
+
+            let requirements = '';
+            let progress = '';
+            const selectedStudyYear = parseInt(document.getElementById('studyYearSelect').value);
+
+            const allPassD = yearCourses.every(c => ['A', 'B', 'C', 'D'].includes(c.letterGrade));
+            const meetsCredits = totalCredits >= 120;
+
+            if (selectedStudyYear === 1) { // Year 1 to Year 2
+                requirements = `
+                    <p><strong>Year 1 to Year 2 Requirements:</strong></p>
+                    <ul>
+                        <li>120 credits (8 courses)</li>
+                        <li>All courses at grade D (40%) or higher</li>
+                    </ul>
+                `;
+                progress = `
+                    <p><strong>Progress Status:</strong> ${meetsCredits && allPassD ? '✅ Meets requirements' : '❌ Does not meet requirements'}</p>
+                    <p>Current Credits: ${totalCredits}/120</p>
+                `;
+            } else if (selectedStudyYear === 2) { // Year 2 to Year 3
+                requirements = `
+                    <p><strong>Year 2 to Year 3 Requirements:</strong></p>
+                    <ul>
+                        <li>120 credits (8 courses)</li>
+                        <li>All courses at grade D (40%) or higher</li>
+                    </ul>
+                `;
+                progress = `
+                    <p><strong>Progress Status:</strong> ${meetsCredits && allPassD ? '✅ Meets requirements' : '❌ Does not meet requirements'}</p>
+                    <p>Current Credits: ${totalCredits}/120</p>
+                `;
+            } else if (selectedStudyYear >= 3) { // Year 3 to Year 4 and onwards
+                requirements = `
+                    <p><strong>Year 3 to Year 4 Requirements:</strong></p>
+                    <ul>
+                        <li>120 credits (8 courses)</li>
+                        <li>Overall assessment average of 50% or above at first attempt</li>
+                        <li>All courses at grade D or higher</li>
+                    </ul>
+                `;
+                const meetsWAM = parseFloat(wam) >= 50;
+                progress = `
+                    <p><strong>Progress Status:</strong> ${meetsCredits && allPassD && meetsWAM ? '✅ Meets requirements' : '❌ Does not meet requirements'}</p>
+                    <p>Current Credits: ${totalCredits}/120 | WAM: ${wam}%</p>
+                `;
+            } else {
+                requirements = '<p>Select a year of study to see requirements.</p>';
+            }
+
+            requirementsContainer.innerHTML = requirements;
+            progressInfo.innerHTML = progress;
+        }
+
+        // Update course history display
+        function updateCourseHistory() {
+            // Update semester 1 courses
+            const semester1Courses = getCoursesBySemester('1', document.getElementById('semester1Year').value);
+            const semester1Container = document.getElementById('semester1Courses');
+            semester1Container.innerHTML = '';
+
+            if (semester1Courses.length === 0) {
+                semester1Container.innerHTML = '<div class="empty-state">No courses found for this semester.</div>';
+            } else {
+                semester1Courses.forEach(course => {
+                    const courseItem = document.createElement('div');
+                    courseItem.className = 'course-item';
+                    courseItem.innerHTML = `
+                        <div>
+                            <strong>${course.courseName}</strong> (${course.credits} credits)
+                            <div class="small-text">${getGradeDescription(course.letterGrade)}</div>
+                        </div>
+                        <div class="course-actions">
+                            <span>${course.finalPercentage}%</span>
+                            <span class="grade-badge grade-${course.letterGrade}">${course.letterGrade}</span>
+                            <button class="delete-btn" data-id="${course.id}">Delete</button>
+                        </div>
+                    `;
+                    semester1Container.appendChild(courseItem);
+                });
+            }
+
+            // Update semester 2 courses
+            const semester2Courses = getCoursesBySemester('2', document.getElementById('semester2Year').value);
+            const semester2Container = document.getElementById('semester2Courses');
+            semester2Container.innerHTML = '';
+
+            if (semester2Courses.length === 0) {
+                semester2Container.innerHTML = '<div class="empty-state">No courses found for this semester.</div>';
+            } else {
+                semester2Courses.forEach(course => {
+                    const courseItem = document.createElement('div');
+                    courseItem.className = 'course-item';
+                    courseItem.innerHTML = `
+                        <div>
+                            <strong>${course.courseName}</strong> (${course.credits} credits)
+                            <div class="small-text">${getGradeDescription(course.letterGrade)}</div>
+                        </div>
+                        <div class="course-actions">
+                            <span>${course.finalPercentage}%</span>
+                            <span class="grade-badge grade-${course.letterGrade}">${course.letterGrade}</span>
+                            <button class="delete-btn" data-id="${course.id}">Delete</button>
+                        </div>
+                    `;
+                    semester2Container.appendChild(courseItem);
+                });
+            }
+
+            // Update year statistics
+            const yearCourses = getCoursesByAcademicYear(document.getElementById('academicYearSelect').value);
+            updateYearStatistics(yearCourses);
+
+            // Add event listeners to delete buttons
+            document.querySelectorAll('.delete-btn').forEach(button => {
+                button.addEventListener('click', function () {
+                    const courseId = this.getAttribute('data-id');
+                    if (confirm('Are you sure you want to delete this course?')) {
+                        deleteCourseFromDB(courseId);
+                    }
+                });
+            });
+        }
+
+        // Update year statistics
+        function updateYearStatistics(courses) {
+            if (courses.length === 0) {
+                document.getElementById('totalCredits').textContent = '0';
+                document.getElementById('averageGrade').textContent = '0%';
+                document.getElementById('coursesCompleted').textContent = '0';
+                document.getElementById('bestCourse').textContent = '-';
+                return;
+            }
+
+            const totalCredits = courses.reduce((sum, course) => sum + course.credits, 0);
+            const averageGrade = courses.reduce((sum, course) => sum + course.finalPercentage, 0) / courses.length;
+            const bestCourse = courses.reduce((best, course) =>
+                course.finalPercentage > best.finalPercentage ? course : best
+            );
+
+            document.getElementById('totalCredits').textContent = totalCredits;
+            document.getElementById('averageGrade').textContent = averageGrade.toFixed(1) + '%';
+            document.getElementById('coursesCompleted').textContent = courses.length;
+            document.getElementById('bestCourse').textContent = `${bestCourse.courseName} (${bestCourse.finalPercentage}%)`;
+        }
+
+        // Update overall year results
+        function updateOverallYearResults() {
+            const allCourses = getCoursesFromDB();
+            const currentYear = document.getElementById('academicYear').value;
+            const currentYearCourses = allCourses.filter(course => course.academicYear === currentYear);
+
+            // Всегда обновляем, даже если нет курсов
+            if (currentYearCourses.length > 0) {
+                const wam = calculateWAM(currentYearCourses);
+                document.getElementById('overallWAM').textContent = wam;
+                document.getElementById('degreeClassification').textContent = calculateDegreeClassification(wam);
+                updateYearRequirements(currentYearCourses, currentYear);
+            } else {
+                // Явно обнуляем все значения
+                document.getElementById('overallWAM').textContent = '0';
+                document.getElementById('degreeClassification').textContent = '-';
+                document.getElementById('yearRequirements').innerHTML = '<p>No courses saved for this year.</p>';
+                document.getElementById('progressInfo').innerHTML = '';
+            }
+        }
+
+        // Update all displays
+        function updateAllDisplays() {
+            updateCourseHistory();
+            updateOverallYearResults();
+        }
+
+        // Export data to Excel - ИСПРАВЛЕННАЯ ВЕРСИЯ
+        function exportToExcel() {
+            try {
+                const db = initDatabase();
+
+                // Преобразуем данные в подходящий формат для Excel
+                const exportData = db.courses.map(course => ({
+                    "Course Name": course.courseName || "",
+                    "Credits": course.credits || 0,
+                    "Semester": course.semester || "",
+                    "Academic Year": course.academicYear || "",
+                    "Final Percentage": course.finalPercentage || 0,
+                    "Letter Grade": course.letterGrade || "",
+                    "ID": course.id || ""
+                }));
+
+                if (exportData.length === 0) {
+                    alert("No data to export!");
+                    return;
+                }
+
+                const ws = XLSX.utils.json_to_sheet(exportData);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Courses");
+
+                // Создаем имя файла с датой
+                const date = new Date().toISOString().split('T')[0];
+                const fileName = `grade_calculator_data_${date}.xlsx`;
+
+                XLSX.writeFile(wb, fileName);
+                console.log("Export completed successfully");
+
+            } catch (error) {
+                console.error("Export error:", error);
+                alert("Error exporting data: " + error.message);
+            }
+
+        }
+
+        // Import data from Excel
+        function importFromExcel(file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+                const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+                // Merge with existing data
+                const db = initDatabase();
+                jsonData.forEach(course => {
+                    // Check if course already exists
+                    const existingIndex = db.courses.findIndex(c => c.id === course.id);
+                    if (existingIndex >= 0) {
+                        db.courses[existingIndex] = course;
+                    } else {
+                        course.id = Date.now().toString() + Math.random().toString(36).substr(2, 5);
+                        db.courses.push(course);
+                    }
+                });
+
+                localStorage.setItem(DB_NAME, JSON.stringify(db));
+                alert('Data imported successfully!');
+                updateAllDisplays();
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // Counter for assessment blocks
+        let assessmentCount = 0;
+
+        // Function to add a new assessment block
+        function addAssessmentBlock() {
+            assessmentCount++;
+            const container = document.getElementById('assessmentsContainer');
+
+            const assessmentBlock = document.createElement('div');
+            assessmentBlock.className = 'assessment-block';
+            assessmentBlock.innerHTML = `
+                <h3>Assessment ${assessmentCount}</h3>
+                <div class="form-group">
+                    <label for="assessmentName${assessmentCount}">Assessment Name</label>
+                    <input type="text" id="assessmentName${assessmentCount}" placeholder="Enter assessment name">
+                </div>
+                <div class="horizontal-group">
+                    <div class="horizontal-item">
+                        <label for="fullMarks${assessmentCount}">Full Marks</label>
+                        <input type="number" id="fullMarks${assessmentCount}" placeholder="Enter full marks" min="0">
+                    </div>
+                    <div class="horizontal-item">
+                        <label for="obtainedMark${assessmentCount}">Obtained Mark</label>
+                        <input type="number" id="obtainedMark${assessmentCount}" placeholder="Enter obtained mark" min="0">
+                    </div>
+                    <div class="horizontal-item">
+                        <label for="weighting${assessmentCount}">Weighting (%)</label>
+                        <input type="number" id="weighting${assessmentCount}" placeholder="Enter weighting" min="0" max="100">
+                    </div>
+                </div>
+            `;
+
+            container.appendChild(assessmentBlock);
+        }
+
+        // Function to calculate final grades
+        function calculateGrades() {
+            let totalWeightedScore = 0;
+            let totalWeight = 0;
+
+            for (let i = 1; i <= assessmentCount; i++) {
+                const fullMarks = parseFloat(document.getElementById(`fullMarks${i}`).value) || 0;
+                const obtainedMark = parseFloat(document.getElementById(`obtainedMark${i}`).value) || 0;
+                const weighting = parseFloat(document.getElementById(`weighting${i}`).value) || 0;
+
+                if (fullMarks > 0 && weighting > 0) {
+                    const percentage = (obtainedMark / fullMarks) * 100;
+                    totalWeightedScore += percentage * (weighting / 100);
+                    totalWeight += weighting;
+                }
+            }
+
+            // Calculate final percentage
+            const finalPercentage = totalWeight > 0 ? totalWeightedScore : 0;
+            document.getElementById('finalPercentage').textContent = finalPercentage.toFixed(1) + '%';
+
+
+
+            // Calculate letter grade 
+            const letterGrade = calculateLetterGrade(finalPercentage);
+            document.getElementById('finalLetter').textContent = letterGrade;
+
+            updateWeightInfo(totalWeight);
+            showPassingTarget(finalPercentage, totalWeight);
+
+            return {
+                finalPercentage: finalPercentage,
+                letterGrade: letterGrade
+            };
+        }
+
+
+        function updateWeightInfo(totalWeight) {
+            const weightInfo = document.getElementById('weightInfo');
+            if (!weightInfo) return;
+
+            const remainingWeight = 100 - totalWeight;
+
+            let html = `<div class="weight-summary">
+        <strong>Total Weight: ${totalWeight.toFixed(1)}%</strong>`;
+
+            if (totalWeight < 100) {
+                html += `<div class="progress-warning">
+            ⚠️ Remaining weight: ${remainingWeight.toFixed(1)}% 
+
+        </div>`;
+            } else if (totalWeight === 100) {
+                html += `<div class="progress-good">
+            ✅ Weight distribution complete
+        </div>`;
+            } else {
+                html += `<div class="progress-danger">
+            ❌ Weight exceeded by ${(totalWeight - 100).toFixed(1)}%
+        </div>`;
+            }
+
+            html += `</div>`;
+            weightInfo.innerHTML = html;
+        }
+        function showPassingTarget(currentPercent, totalWeight) {
+            const targetBox = document.getElementById('targetBox');
+            if (!targetBox) return;
+
+            const remainingWeight = 100 - totalWeight;
+            let html = '';
+
+            if (currentPercent >= 40) {
+                html = `<div class="target-guaranteed">
+            ✅ Course passing guaranteed (currently ${currentPercent.toFixed(1)}%)
+        </div>`;
+            } else if (remainingWeight > 0) {
+                const neededScore = (40 - currentPercent) / (remainingWeight / 100);
+                if (neededScore <= 100) {
+                    html = `<div class="target-achievable">
+                ⚠️ To pass this course: need ${neededScore.toFixed(1)}% on remaining ${remainingWeight}% of assessments
+            </div>`;
+                } else {
+                    html = `<div class="target-impossible">
+                ❌ Cannot pass - maximum possible: ${(currentPercent + remainingWeight).toFixed(1)}%
+            </div>`;
+                }
+            } else {
+                html = `<div class="target-failed">
+            ❌ Course failed (${currentPercent.toFixed(1)}%)
+        </div>`;
+            }
+
+            targetBox.innerHTML = html;
+        }
+
+        // Function to save results
+        function saveResults() {
+            const courseName = document.getElementById('courseName').value;
+            const credits = parseInt(document.getElementById('credits').value) || 0;
+            const semester = document.getElementById('semester').value;
+            const academicYear = document.getElementById('academicYear').value;
+
+            if (!courseName || credits === 0) {
+                alert('Please enter course name and credits');
+                return;
+            }
+
+            const grades = calculateGrades();
+
+            const courseData = {
+                courseName: courseName,
+                credits: credits,
+                semester: semester,
+                academicYear: academicYear,
+                finalPercentage: grades.finalPercentage,
+                letterGrade: grades.letterGrade,
+                assessments: []
+            };
+
+            // Collect assessment data
+            for (let i = 1; i <= assessmentCount; i++) {
+                const assessmentName = document.getElementById(`assessmentName${i}`).value;
+                const fullMarks = parseFloat(document.getElementById(`fullMarks${i}`).value) || 0;
+                const obtainedMark = parseFloat(document.getElementById(`obtainedMark${i}`).value) || 0;
+                const weighting = parseFloat(document.getElementById(`weighting${i}`).value) || 0;
+
+                if (assessmentName && fullMarks > 0) {
+                    courseData.assessments.push({
+                        name: assessmentName,
+                        fullMarks: fullMarks,
+                        obtainedMark: obtainedMark,
+                        weighting: weighting
+                    });
+                }
+            }
+
+            saveCourseToDB(courseData);
+            alert('Course saved successfully!');
+        }
+
+        // Wait for the DOM to be fully loaded before running scripts
+        document.addEventListener('DOMContentLoaded', function() {
+
+        // Event listeners
+        document.getElementById('addAssessment').addEventListener('click', addAssessmentBlock);
+        document.getElementById('saveResults').addEventListener('click', saveResults);
+        document.getElementById('exportData').addEventListener('click', exportToExcel);
+        document.getElementById('exportCourse').addEventListener('click', function () {
+            try {
+                // Create export data for current course
+                const courseName = document.getElementById('courseName').value || "Unnamed Course";
+                const credits = document.getElementById('credits').value || 0;
+                const semester = document.getElementById('semester').value || "";
+                const academicYear = document.getElementById('academicYear').value || "";
+                const finalPercentage = document.getElementById('finalPercentage').textContent;
+                const letterGrade = document.getElementById('finalLetter').textContent;
+
+                const courseData = [{
+                    "Course Name": courseName,
+                    "Credits": credits,
+                    "Semester": semester,
+                    "Academic Year": academicYear,
+                    "Final Percentage": finalPercentage,
+                    "Letter Grade": letterGrade
+                }];
+
+                if (!courseName || courseName === "Unnamed Course") {
+                    alert("Please enter course name before exporting");
+                    return;
+                }
+
+                const ws = XLSX.utils.json_to_sheet(courseData);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Current Course");
+
+                const fileName = `course_${courseName.replace(/[^a-zA-Z0-9]/g, '_')}.xlsx`;
+                XLSX.writeFile(wb, fileName);
+
+            } catch (error) {
+                console.error("Course export error:", error);
+                alert("Error exporting course data: " + error.message);
+            }
+        });
+
+        document.getElementById('importData').addEventListener('click', function () {
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = '.xlsx, .xls';
+            fileInput.onchange = function (e) {
+                importFromExcel(e.target.files[0]);
+            };
+            fileInput.click();
+        });
+
+        // Tab functionality
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function () {
+                // Remove active class from all tabs and contents
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+                // Add active class to clicked tab and corresponding content
+                this.classList.add('active');
+                const tabId = this.getAttribute('data-tab');
+                document.getElementById(`${tabId}-content`).classList.add('active');
+
+                // Update data for the selected tab
+                updateCourseHistory();
+            });
+        });
+
+        // Update displays when year selectors change
+        document.getElementById('semester1Year').addEventListener('change', updateCourseHistory);
+        document.getElementById('semester2Year').addEventListener('change', updateCourseHistory);
+        document.getElementById('academicYearSelect').addEventListener('change', updateCourseHistory);
+        document.getElementById('studyYearSelect').addEventListener('change', updateOverallYearResults);
+        document.getElementById('academicYear').addEventListener('change', updateOverallYearResults);
+
+        // Add event listeners to all assessment inputs for real-time calculation
+        document.addEventListener('input', function (e) {
+            if (e.target.id.includes('fullMarks') ||
+                e.target.id.includes('obtainedMark') ||
+                e.target.id.includes('weighting')) {
+                calculateGrades();
+            }
+        });
+
+        // Initialize with one assessment block
+        addAssessmentBlock();
+
+        // Заполняем выпадающие списки с годами
+        populateYearSelects();
+
+        // Инициализируем отображения
+        updateAllDisplays();
+
+        // Принудительно обновляем при загрузке страницы
+        window.addEventListener('load', function () {
+            updateOverallYearResults();
+        });
+
+        // ==================== PWA FUNCTIONALITY ====================
+
+        // Service Worker registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function () {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(function (registration) {
+                        console.log('ServiceWorker registered: ', registration);
+                    })
+                    .catch(function (registrationError) {
+                        console.log('ServiceWorker registration failed: ', registrationError);
+                    });
+            });
+        }
+
+        // PWA Installation Prompt
+        let deferredPrompt;
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            console.log('PWA installation available');
+
+            // Show install button (if you have one)
+            // showInstallButton();
+        });
+
+        // For manual installation trigger
+        function installPWA() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('User accepted install');
+                    }
+                    deferredPrompt = null;
+                });
+            }
+        }
+
+        // --- START: FEEDBACK FUNCTIONALITY ---
+        const feedbackFab = document.getElementById('feedbackFab');
+        const feedbackPanel = document.getElementById('feedbackPanel');
+        const feedbackClose = document.getElementById('feedbackClose');
+        const feedbackOverlay = document.getElementById('feedbackOverlay');
+        const feedbackSubmit = document.getElementById('feedbackSubmit');
+
+        // Function to open the feedback panel
+        function openFeedback() {
+            feedbackPanel.classList.add('active');
+            feedbackOverlay.classList.add('active');
+        }
+
+        // Function to close the feedback panel
+        function closeFeedback() {
+            feedbackPanel.classList.remove('active');
+            feedbackOverlay.classList.remove('active');
+        }
+
+        // Add event listeners for feedback functionality
+        feedbackFab.addEventListener('click', openFeedback);
+        feedbackClose.addEventListener('click', closeFeedback);
+        feedbackOverlay.addEventListener('click', closeFeedback);
+
+        feedbackSubmit.addEventListener('click', function() {
+            const easeOfUse = document.querySelector('input[name="ease"]:checked');
+            const likes = document.getElementById('feedbackLikes').value.trim();
+            const issues = document.getElementById('feedbackIssues').value.trim();
+
+            if (!issues) {
+                alert('Please describe your suggestion or issue before submitting.');
+                document.getElementById('feedbackIssues').focus();
+                return;
+            }
+
+            // This version just logs to console and shows an alert.
+            console.log('Feedback submitted:', { easeOfUse: easeOfUse ? easeOfUse.value : 'N/A', likes, issues });
+            alert('Thank you for your feedback! We appreciate your input.');
+
+            closeFeedback();
+        });
+        // --- END: FEEDBACK FUNCTIONALITY ---
+
+    }); // End of DOMContentLoaded
+    </script>
+</body>
+
+</html>
