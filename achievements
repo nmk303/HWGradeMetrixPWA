@@ -1,0 +1,8 @@
+**Basic functionality:** The application successfully calculates weighted final scores based on the results of multiple assessments, providing both a percentage and a letter grade in real time.
+**PWA Implementation:** This is a fully installable progressive web application, complete with a manifest file, icons, and service employee registration, which allows offline access and provides an experience similar to a native application.
+**Local storage:** The application effectively uses localStorage to save, retrieve, and delete course data, ensuring that user information is preserved between sessions.
+**Advanced academic tracking:** It goes beyond simple calculation by tracking the WAM (weighted average grade), predicting degree classification, and checking progress against the university's specific yearly progress requirements.
+**Data management:** Users can import and export all course data to and from Excel (.xlsx) files, providing a reliable method of data backup and migration.
+**Dynamic and adaptive user interface:** The user interface is intuitive, adapted for mobile devices, and allows users to dynamically add assessment blocks as needed.
+**Real-time:** The user interface provides instant feedback on the overall grade and calculates the required score on the remaining grades required to complete the course.
+**Functional feedback system:** A full user interface for the feedback widget has been implemented, including a floating button, sidebar, and input fields, with a working  submission process.

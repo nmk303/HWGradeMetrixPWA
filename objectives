@@ -1,0 +1,8 @@
+# Short-Term Goals (Quick Wins & Enhancements)
+Implement Email Feedback: Finalize the feedback system by adding the mailto: functionality. This will open the user's email client with a pre-filled draft containing their feedback, making the system fully operational.
+Add a "Clear Form" Button: Add a button to the "ASSESSMENT COMPONENTS" card that resets all input fields (course name, credits, assessments) to their default state, improving usability.
+Improve User Experience on Actions: Replace disruptive alert() messages (like "Course saved successfully!") with temporary, non-blocking notifications (e.g., a "toast" message that appears and fades away).
+# Medium-Term Goals (New Features)
+Refactor Code: Move the large block of JavaScript from index.html into its own separate file (e.g., app.js). This is a standard best practice that makes the code much easier to read, manage, and debug.
+Graphical Data Visualization: In the "COURSE HISTORY & STATISTICS" section, add simple bar charts or line graphs to visually represent a student's grades over time, making trends easier to spot.
+API Integration: Connect to a university's API (if available) to automatically pull in course catalogs, credit information, or even grades, reducing manual data entry.
