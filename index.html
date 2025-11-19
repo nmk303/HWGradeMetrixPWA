@@ -574,6 +574,54 @@
         right: -100%;
     }
 }
+
+/* Toast (Notification) Styles */
+#toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.toast {
+    padding: 15px 20px;
+    border-radius: 8px;
+    color: white;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    opacity: 0;
+    transform: translateX(100%);
+    animation: toast-in 0.5s forwards;
+}
+
+.toast.success { background-color: var(--success); }
+.toast.warning { background-color: var(--warning); color: var(--dark); }
+.toast.error { background-color: var(--danger); }
+
+.toast.fade-out {
+    animation: toast-out 0.5s forwards;
+}
+
+@keyframes toast-in {
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes toast-out {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+}
     </style>
 </head>
 
@@ -630,7 +678,10 @@
             <div id="assessmentsContainer">
                 <!-- Assessment blocks will be added here dynamically -->
             </div>
-            <button id="addAssessment" class="accent">+ Add New Assessment</button>
+            <div class="action-buttons">
+                <button id="addAssessment" class="accent">+ Add New Assessment</button>
+                <button id="resetApp" class="danger">Reset</button>
+            </div>
             <div id="weightInfo" class="weight-info"></div>
         </div>
 
@@ -777,10 +828,15 @@
  </div> 
     <!-- Add this before the closing body tag -->
 <div class="feedback-overlay" id="feedbackOverlay"></div>
+<!-- Toast Notification Container -->
+<div id="toast-container"></div>
 
     <script>
         // Database simulation using localStorage
         const DB_NAME = 'gradeCalculatorDB';
+
+        // ==================== UTILITY FUNCTIONS ====================
+
 
         // Generate academic years from 2020-2021 to 2030-2031
         function generateAcademicYears() {
@@ -829,6 +885,8 @@
             });
         }
 
+        // ==================== DATABASE FUNCTIONS ====================
+
         // Initialize database if not exists
         function initDatabase() {
             if (!localStorage.getItem(DB_NAME)) {
@@ -866,6 +924,8 @@
             const db = initDatabase();
             return db.courses;
         }
+
+        // ==================== DATA RETRIEVAL & CALCULATION ====================
 
         // Get courses by semester and year
         function getCoursesBySemester(semester, year) {
@@ -914,6 +974,8 @@
             if (percentage >= 30) return 'E';
             return 'F';
         }
+
+        // ==================== UI UPDATE FUNCTIONS ====================
 
         // Get grade description
         function getGradeDescription(letterGrade) {
@@ -995,59 +1057,42 @@
             progressInfo.innerHTML = progress;
         }
 
+        // Helper function to render a list of courses
+        function renderCourseList(courses, container) {
+            container.innerHTML = '';
+            if (courses.length === 0) {
+                container.innerHTML = '<div class="empty-state">No courses found for this semester.</div>';
+            } else {
+                courses.forEach(course => {
+                    const courseItem = document.createElement('div');
+                    courseItem.className = 'course-item';
+                    courseItem.innerHTML = `
+                        <div>
+                            <strong>${course.courseName}</strong> (${course.credits} credits)
+                            <div class="small-text">${getGradeDescription(course.letterGrade)}</div>
+                        </div>
+                        <div class="course-actions">
+                            <span>${course.finalPercentage}%</span>
+                            <span class="grade-badge grade-${course.letterGrade}">${course.letterGrade}</span>
+                            <button class="delete-btn" data-id="${course.id}">Delete</button>
+                        </div>
+                    `;
+                    container.appendChild(courseItem);
+                });
+            }
+        }
+
         // Update course history display
         function updateCourseHistory() {
             // Update semester 1 courses
             const semester1Courses = getCoursesBySemester('1', document.getElementById('semester1Year').value);
             const semester1Container = document.getElementById('semester1Courses');
-            semester1Container.innerHTML = '';
-
-            if (semester1Courses.length === 0) {
-                semester1Container.innerHTML = '<div class="empty-state">No courses found for this semester.</div>';
-            } else {
-                semester1Courses.forEach(course => {
-                    const courseItem = document.createElement('div');
-                    courseItem.className = 'course-item';
-                    courseItem.innerHTML = `
-                        <div>
-                            <strong>${course.courseName}</strong> (${course.credits} credits)
-                            <div class="small-text">${getGradeDescription(course.letterGrade)}</div>
-                        </div>
-                        <div class="course-actions">
-                            <span>${course.finalPercentage}%</span>
-                            <span class="grade-badge grade-${course.letterGrade}">${course.letterGrade}</span>
-                            <button class="delete-btn" data-id="${course.id}">Delete</button>
-                        </div>
-                    `;
-                    semester1Container.appendChild(courseItem);
-                });
-            }
+            renderCourseList(semester1Courses, semester1Container);
 
             // Update semester 2 courses
             const semester2Courses = getCoursesBySemester('2', document.getElementById('semester2Year').value);
             const semester2Container = document.getElementById('semester2Courses');
-            semester2Container.innerHTML = '';
-
-            if (semester2Courses.length === 0) {
-                semester2Container.innerHTML = '<div class="empty-state">No courses found for this semester.</div>';
-            } else {
-                semester2Courses.forEach(course => {
-                    const courseItem = document.createElement('div');
-                    courseItem.className = 'course-item';
-                    courseItem.innerHTML = `
-                        <div>
-                            <strong>${course.courseName}</strong> (${course.credits} credits)
-                            <div class="small-text">${getGradeDescription(course.letterGrade)}</div>
-                        </div>
-                        <div class="course-actions">
-                            <span>${course.finalPercentage}%</span>
-                            <span class="grade-badge grade-${course.letterGrade}">${course.letterGrade}</span>
-                            <button class="delete-btn" data-id="${course.id}">Delete</button>
-                        </div>
-                    `;
-                    semester2Container.appendChild(courseItem);
-                });
-            }
+            renderCourseList(semester2Courses, semester2Container);
 
             // Update year statistics
             const yearCourses = getCoursesByAcademicYear(document.getElementById('academicYearSelect').value);
@@ -1130,7 +1175,7 @@
                 }));
 
                 if (exportData.length === 0) {
-                    alert("No data to export!");
+                    showToast("No data to export!", 'warning');
                     return;
                 }
 
@@ -1147,7 +1192,7 @@
 
             } catch (error) {
                 console.error("Export error:", error);
-                alert("Error exporting data: " + error.message);
+                showToast("Error exporting data: " + error.message, 'error');
             }
 
         }
@@ -1175,11 +1220,36 @@
                 });
 
                 localStorage.setItem(DB_NAME, JSON.stringify(db));
-                alert('Data imported successfully!');
+                showToast('Data imported successfully!', 'success');
                 updateAllDisplays();
             };
             reader.readAsArrayBuffer(file);
         }
+
+        // Function to show toast notifications
+        function showToast(message, type = 'info', duration = 3000) {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+
+            container.appendChild(toast);
+
+            // Auto-remove the toast
+            setTimeout(() => {
+                toast.classList.add('fade-out');
+                // Remove from DOM after animation
+                toast.addEventListener('animationend', () => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                });
+            }, duration);
+        }
+
+        // ==================== MAIN CALCULATOR LOGIC ====================
 
         // Counter for assessment blocks
         let assessmentCount = 0;
@@ -1319,7 +1389,7 @@
             const academicYear = document.getElementById('academicYear').value;
 
             if (!courseName || credits === 0) {
-                alert('Please enter course name and credits');
+                showToast('Please enter course name and credits.', 'warning');
                 return;
             }
 
@@ -1353,9 +1423,36 @@
             }
 
             saveCourseToDB(courseData);
-            alert('Course saved successfully!');
+            showToast('Course saved successfully!', 'success');
         }
 
+        // Function to reset the calculator state
+        function resetCalculatorState() {
+            // 1. COURSE/MODULE DETAILS
+            document.getElementById('courseName').value = '';
+            document.getElementById('credits').value = '';
+            document.getElementById('semester').value = '1';
+            // Reset academic year to current
+            const currentYear = new Date().getFullYear();
+            const currentAcademicYear = `${currentYear}-${currentYear + 1}`;
+            document.getElementById('academicYear').value = currentAcademicYear;
+            document.getElementById('studyYearSelect').value = '1';
+
+            // 2. ASSESSMENT COMPONENTS
+            document.getElementById('assessmentsContainer').innerHTML = '';
+            assessmentCount = 0;
+            addAssessmentBlock(); // Add one empty block back
+
+            // 3. COURSE RESULTS (and related info)
+            // This function resets final percentage, letter grade, weight info, and target box
+            calculateGrades();
+
+            // 4. OVERALL YEAR RESULTS
+            // This function will reset WAM, classification, and requirements based on the new (empty) state
+            updateOverallYearResults();
+            
+            showToast('Calculator has been reset.', 'success');
+        }
         // Wait for the DOM to be fully loaded before running scripts
         document.addEventListener('DOMContentLoaded', function() {
 
@@ -1364,6 +1461,7 @@
         document.getElementById('saveResults').addEventListener('click', saveResults);
         document.getElementById('exportData').addEventListener('click', exportToExcel);
         document.getElementById('exportCourse').addEventListener('click', function () {
+
             try {
                 // Create export data for current course
                 const courseName = document.getElementById('courseName').value || "Unnamed Course";
@@ -1383,7 +1481,7 @@
                 }];
 
                 if (!courseName || courseName === "Unnamed Course") {
-                    alert("Please enter course name before exporting");
+                    showToast("Please enter course name before exporting.", 'warning');
                     return;
                 }
 
@@ -1396,7 +1494,7 @@
 
             } catch (error) {
                 console.error("Course export error:", error);
-                alert("Error exporting course data: " + error.message);
+                showToast("Error exporting course data: " + error.message, 'error');
             }
         });
 
@@ -1409,6 +1507,9 @@
             };
             fileInput.click();
         });
+
+        // Reset button event listener
+        document.getElementById('resetApp').addEventListener('click', resetCalculatorState);
 
         // Tab functionality
         document.querySelectorAll('.tab').forEach(tab => {
@@ -1527,14 +1628,14 @@
             const issues = document.getElementById('feedbackIssues').value.trim();
 
             if (!issues) {
-                alert('Please describe your suggestion or issue before submitting.');
+                showToast('Please describe your suggestion or issue before submitting.', 'warning');
                 document.getElementById('feedbackIssues').focus();
                 return;
             }
 
             // This version just logs to console and shows an alert.
             console.log('Feedback submitted:', { easeOfUse: easeOfUse ? easeOfUse.value : 'N/A', likes, issues });
-            alert('Thank you for your feedback! We appreciate your input.');
+            showToast('Thank you for your feedback! We appreciate your input.', 'success');
 
             closeFeedback();
         });
