@@ -1,0 +1,36 @@
+# Editor directories and files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# GitHub workflows (if not needed)
+.github/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Node modules (if you add npm later)
+node_modules/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment files
+.env
+.env.local
+
+# Build files (if you add build process)
+dist/
+build/
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+# Other configuration files
+.github
