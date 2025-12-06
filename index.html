@@ -705,11 +705,10 @@
             </div>
 
             <div class="target-box" id="targetBox">
-                <!-- Информация о том, сколько нужно для цели ////////////////////////////////////////////////////////////////////////////////////-->
+                <!-- How much more is needed to reach the target grade -->
             </div>
             <div class="action-buttons">
                 <button id="saveResults" class="success">Save Results</button>
-                <button id="exportCourse" class="export-btn">Export Course Data</button>
             </div>
         </div>
 
@@ -736,8 +735,8 @@
                 </div>
             </div>
             <div class="action-buttons">
-                <button id="importData" class="import-btn">Import Excel Data</button>
-                <button id="exportData" class="export-btn">Export All Data</button>
+                <button id="importData" class="import-btn">Import Excel data</button>
+                <button id="exportData" class="export-btn">Export Excel data</button>
                 <button id="resetApp" class="danger">Reset All Data</button>
             </div>
         </div>
@@ -1509,7 +1508,7 @@
                 document.getElementById('overallWAM').textContent = '-';
                 document.getElementById('degreeClassification').textContent = '-';
                 
-                let progressMessage = '<p><strong>Progress towards year completion:</strong></p>';
+                let progressMessage = '';
                 progressMessage += `<p>Courses completed: ${totalCourses}/8 (${coursesNeeded} more needed)</p>`;
                 progressMessage += `<p>Credits earned: ${totalCredits}/120 (${creditsNeeded} more needed)</p>`;
                 progressMessage += '<p class="small-text" style="margin-top: 10px; color: #856404;">💡 Complete 8 courses (120 credits) to see overall year results and degree classification.</p>';
@@ -1946,43 +1945,6 @@
         document.getElementById('addAssessment').addEventListener('click', addAssessmentBlock);
         document.getElementById('saveResults').addEventListener('click', saveResults);
         document.getElementById('exportData').addEventListener('click', exportToExcel);
-        document.getElementById('exportCourse').addEventListener('click', function () {
-
-            try {
-                // Create export data for current course
-                const courseName = document.getElementById('courseName').value || "Unnamed Course";
-                const credits = document.getElementById('credits').value || 0;
-                const semester = document.getElementById('semester').value || "";
-                const academicYear = document.getElementById('academicYear').value || "";
-                const finalPercentage = document.getElementById('finalPercentage').textContent;
-                const letterGrade = document.getElementById('finalLetter').textContent;
-
-                const courseData = [{
-                    "Course Name": courseName,
-                    "Credits": credits,
-                    "Semester": semester,
-                    "Academic Year": academicYear,
-                    "Final Percentage": finalPercentage,
-                    "Letter Grade": letterGrade
-                }];
-
-                if (!courseName || courseName === "Unnamed Course") {
-                    showToast("Please enter course name before exporting.", 'warning');
-                    return;
-                }
-
-                const ws = XLSX.utils.json_to_sheet(courseData);
-                const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws, "Current Course");
-
-                const fileName = `course_${courseName.replace(/[^a-zA-Z0-9]/g, '_')}.xlsx`;
-                XLSX.writeFile(wb, fileName);
-
-            } catch (error) {
-                console.error("Course export error:", error);
-                showToast("Error exporting course data: " + error.message, 'error');
-            }
-        });
 
         document.getElementById('importData').addEventListener('click', async function () {
             // If File System Access API is supported and we have a directory handle, use it
@@ -2084,13 +2046,13 @@
         // Initialize with one assessment block
         addAssessmentBlock();
 
-        // Заполняем выпадающие списки с годами
+        // Fill year selects with current and past years
         populateYearSelects();
 
-        // Инициализируем отображения
+        // Initialize displays
         updateAllDisplays();
 
-        // Принудительно обновляем при загрузке страницы
+        // Force update on page load
         window.addEventListener('load', function () {
             updateOverallYearResults();
         });
