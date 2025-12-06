@@ -39,14 +39,14 @@ To get a dedicated app icon, you should install it as a Progressive Web App (PWA
 3.  **Save Your Results:**
     *   Click the `Save Results` button to store the course data.
     *   Saved courses will appear in the "COURSE HISTORY & STATISTICS" section.
-    *   Export Course Data` to save your current course history into a single `.xlsx` file
+    * 
 4.  **Track Overall Progress:**
     *   The "OVERALL YEAR RESULTS" card shows your `Overall Weighted Average Mark (WAM)` based on all courses saved for the selected academic year.
     *   The "Year Progression Requirements" box will show if you meet the criteria to advance to your next year of study.
 
 ## Data Management
 
-*   **Export All Data:** Click `Export All Data` to save all your course history into a single `.xlsx` file.
-*   **Import Data:** This features isn't implemented yet. 
+*   **Export Excel Data:** Click button to save all your course history into a single `.xlsx` file.
+*   **Import Data:** To import files from last saved folder. 
 
 *   Send email nm3002@hw.ac.uk for feedback.
